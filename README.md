@@ -63,6 +63,31 @@ explicitly:
 hermes config set plugins.entries.topic-title-sync.granted_capabilities '["gateway.platform_actions"]'
 ```
 
+### Declarative (Nix / read-only) config
+
+When `config.yaml` is a read-only bind mount — the usual NixOS module setup — `hermes
+plugins enable` cannot persist anything (`rename` onto the mount fails with `EBUSY`, and
+the plugin stays installed-but-disabled). Declare it in the module instead:
+
+```nix
+hermesConfig = yaml.generate "hermes-config.yaml" {
+  # ...existing keys...
+  plugins = {
+    enabled = [ "hindsight" "topic-title-sync" ];   # allow-list: keep your other user plugins here
+    entries."topic-title-sync".granted_capabilities = [ "gateway.platform_actions" ];
+  };
+};
+```
+
+That is the exact shape `hermes plugins enable` would write. Verify after a rebuild with
+`hermes plugins capabilities topic-title-sync` → `gateway.platform_actions: granted`.
+
+Note: a failed enable can leave a PM publication journal at
+`$HERMES_HOME/installs/<id>/publication.json` that makes *every* later `hermes` command
+die with `cannot recover dependency publication: ... Device or resource busy`. The
+journal is a rollback record for a config publish that never happened; delete it once you
+have confirmed `config.yaml` is unchanged (the read-only mount guarantees that).
+
 ## What changed in a topic
 
 `hermes plugins show topic-title-sync` for the manifest. Runtime logs land in
