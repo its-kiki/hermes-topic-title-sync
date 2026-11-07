@@ -1,0 +1,12 @@
+name: topic-title-sync
+version: 0.1.0
+manifest_version: 2
+description: "Rename a Telegram supergroup's forum topic to the Hermes session title as soon as the auto-titler names that conversation."
+author: KiKi
+license: MIT
+homepage: https://github.com/its-kiki/hermes-topic-title-sync
+tags: [gateway, telegram, topics, titles]
+provides_hooks:
+  - on_session_end
+capabilities:
+  - gateway.platform_actions
